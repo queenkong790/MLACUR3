@@ -24,6 +24,7 @@ import SecHeader from './components/Secheader';
 import Cart from './pages/Cart/Cart';
 import CompleteOrder from './pages/Cart/CompleteOrder';
 
+
 const router = createBrowserRouter([
   {
     path: '/',

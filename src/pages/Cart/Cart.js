@@ -1,5 +1,5 @@
 import { text } from '@fortawesome/fontawesome-svg-core'
-import React, { useState } from 'react'
+import React, { useState,useEffect } from 'react'
 import { alignPropType } from 'react-bootstrap/esm/types'
 import classes from './Cart.module.css'
 import { useSelector } from 'react-redux';
@@ -9,7 +9,9 @@ import { removeItemFromCart ,addItemToCart,updateTotalPrice,updateTotalQuantity}
 import { useDispatch } from 'react-redux';
 import { postOrder } from '../../api';
 import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,useLocation } from 'react-router-dom';
+import Signup from '../BookNowPages/Signup';
+
 
 
 
@@ -19,6 +21,8 @@ function Cart() {
   const deliveryDate=useSelector((state)=>state.cart.deliveryDate)
   const subtotal=useSelector((state)=>state.cart.totalPrice)
   const totalQuantity=useSelector((state)=>state.cart.totalQuantity)
+  const loggedIn=useSelector((state)=>state.auth.loggedIn)
+  const [redirect,setRedirect]=useState(false)
   const [quantity,setQuantity]=useState(0)
   const [note,setNote]=useState('')
   const navigate=useNavigate()
@@ -53,23 +57,19 @@ function Cart() {
     const modeMap=['STANDARD (48 HRS)','EXPRESS(24HRS)','SAME DAY(12HRS']
     
     console.log(input)
+    
+  const [previousLocation, setPreviousLocation] = useState(null);
+
+  useEffect(() => {
+    // Update the previousLocation state with the current location when component mounts
+    setPreviousLocation(window.location.pathname);
+  }, []);
   const handleDelete=(ide)=>{
     dispatch(removeItemFromCart({ide}))
     
   }
   
- /* const Datatosend=()=>{
-    
-    if (quantity!==0){
-      setQuantity(quantity)
-      dispatch(addItemToCart({ ide,header, selectedService,deliveryType, finalprice, quantity,Delivery }));
-    console.log('Data to send:')
-    console.log('id:',ide,'header:', header, 'serviceType;',selectedService, 'price;',finalprice,'quanitity:', quantity,'Delivery:',Delivery,'DeliveryType',deliveryType);
-    }else{
-      dispatch(removeItemFromCart({ ide }));
-    }
-    
-  }*/
+ 
   const handleIncrement = (ide,header, selectedService,deliveryType, finalprice, quantity,Delivery,priceForEach) => {
     const newQuantity=quantity+1
     const newPrice=(parseInt(newQuantity) * priceForEach).toFixed(2)
@@ -112,19 +112,30 @@ function Cart() {
     
   const submitHandler=async(e)=>{
     e.preventDefault()
-    try{
-      const data=await postOrder(input)
-      console.log('done')
-
-      if (data) {
-        navigate('/Success', { state: { note } });
-        console.log('Form submitted successfully!');
+    if (localStorage.getItem('address')){
+      try{
+        const data=await postOrder(input)
+        console.log('done')
+  
+        if (data) {
+          navigate('/Success', { state: { note } });
+          console.log('Form submitted successfully!');
+        }
       }
+      catch(error){
+        console.error(error)
+      }
+    }else{
+      alert('please fill out all the fields')
     }
-    catch(error){
-      console.error(error)
-    }
+    
 
+  }
+  const Signupredirect=()=>{
+    setRedirect(true)
+  }
+  if (redirect){
+    navigate('/BookNow')
   }
   return (
     <div className='container justify-content-center' >
@@ -166,7 +177,10 @@ function Cart() {
             </tr>
             <tr>
             <td>Deliver To</td>
-            <td>{localStorage.getItem('address')}<Link to='/Profile' style={{ textDecoration: 'none', color: 'inherit' }}> <FontAwesomeIcon icon={faPencilSquare}/></Link></td>
+            { (localStorage.getItem('address') || loggedIn) &&
+              <td>{localStorage.getItem('address')} <Link to={`/Profile?prev=${encodeURIComponent(previousLocation)}`}  style={{ textDecoration: 'none', color: 'inherit' }}> <FontAwesomeIcon icon={faPencilSquare}/></Link></td>
+            }
+            { !loggedIn  && <td><button type='button' onClick={Signupredirect} style={{padding:'2px',backgroundColor:'#38a5b9',color:'white',borderRadius:'5px',outline:'none'}}>Add delivery address</button></td>}
             </tr>
             <tr>
             <td>Special Requests</td>

@@ -5,8 +5,9 @@ import classes from './Signup.module.css'
 import {postSignUp} from '../../api'
 import { v4 as uuidv4 } from 'uuid';
 import LoginPage from './Login';
-import {Navigate } from 'react-router-dom';
+import {Navigate, useNavigate } from 'react-router-dom';
 import BookNow from '../BookNow';
+import { useEffect } from 'react';
 
 
 const initials=
@@ -29,35 +30,53 @@ const initials=
 const Signup = () => {
     const [input,setInput]=useState(initials)
     const[redirecttoLogin, setredirect]=useState(false)
+    const navigate=useNavigate()
+    const [fieldFilled, setFieldFilled] = useState({
+        "area" : true,
+        "address": true,
+        "last_name": true,
+        "rate_code": true,
+        "street_name": true,
+        "contact_number": true,
+        "serialNo": false,
+        "alter_Contact_Number": true,
+        "id": false,
+        "first_name": true,
+        "email": true,
+        "apartment": true,
+        "Password": true
+      });
+      useEffect(() => {
+        
+        
+      }, []);
     
-    function redirect(){
-        setredirect(true)
-    }
+     
+    
+    
     
     const submithandler = async (e)=>{
         e.preventDefault()
         
         console.log(input)
-        
-        
-        
+        const isAnyFieldEmpty = Object.values(fieldFilled).some((value) =>!value);
+        console.log(isAnyFieldEmpty)
+         
         try{
             const res=await postSignUp(input)
-            console.log(res)
-            if (res.success){
-                setredirect(true)
-            }
+            //console.log(res)
+            
+            
             
         }catch(error){
             console.error(error);
             console.log('Response:', error.response);
         }
+        
         setredirect(true)
+        
     }
     if (redirecttoLogin) {
-        // Render the component you want to redirect to
-        //return <Navigate to="/BookNow" />;
-        //window.location.reload();
         return <BookNow/>
       }
     function inputChangeHandler(input,value){
@@ -67,7 +86,12 @@ const Signup = () => {
               [input]: value,
             };
           });
+          setFieldFilled((prevFilled) => ({
+            ...prevFilled,
+            [input]: value.trim() !== '', 
+          }));
     }
+
     return (
         <div className={classes.container}>
             <div className=''>
@@ -129,7 +153,7 @@ const Signup = () => {
                                 </div>
                                 </div>
 
-                        <div className='row ' style={{margin:'2px',padding:'1px'}}>
+                        <div className='row ' style={{margin:'20px',padding:'10px'}}>
                             <div className='col-12 form-group'>
                             <label htmlFor="address">Closest matching address:</label>
                             <br></br>
@@ -202,7 +226,7 @@ const Signup = () => {
                         </div>
                         <div className='row' style={{margin:'20px',padding:'10px'}}>
                             <div className='form-group col-md-6'>
-                            <label htmlFor="password">Choose a Password(optional)</label>
+                            <label htmlFor="password">Choose a Password</label>
                             <br></br>
                             <input
                                 type='Password'
@@ -215,7 +239,7 @@ const Signup = () => {
                             </div>
                         </div>
                         <div className='text-center'>           
-                        <button className={classes.buttons} type='submit' style={{width:'300px'}}>Save Details</button>
+                        <button className={classes.buttons} type='submit' style={{width:'300px'}} >Save Details</button>
                         </div> 
                     </form>
                 </section>
@@ -223,6 +247,6 @@ const Signup = () => {
             
         </div>
     );
-}
 
+}
 export default Signup;

@@ -5,10 +5,16 @@ import classes from './Profile.module.css'
 import { useState,useEffect } from 'react';
 import { getCustomers, putProfile } from '../../api';
 import BookNow from '../BookNow';
-
+import { useNavigate,useLocation } from 'react-router-dom';
+import { useSelector } from "react-redux";
 
 
 function Profile(){
+    const navigate = useNavigate();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const previousLocation = queryParams.get('prev');
+  const loggedIn=useSelector(state=>state.auth.loggedIn)
     const [input,setInput]=useState({
         first_name: '',
         last_name: '',
@@ -26,7 +32,7 @@ function Profile(){
             const data = await getCustomers();
             const serialNo = localStorage.getItem('serialNo');
             
-            
+            console.log(data)
             data.some(obj => {
                
                 if (obj.serialNo === serialNo  ){
@@ -35,6 +41,7 @@ function Profile(){
                     return true
                 }else{
                     console.log('doesnt work')
+                    
                     return false
                 }
             })
@@ -59,11 +66,14 @@ function Profile(){
         console.log(input)
         try{
             const response=await putProfile(input)
-            console.log(response)
+            localStorage.setItem('address',input.address)
             
         }catch(error){
             console.error(error)
         }
+        if (previousLocation) {
+            navigate(previousLocation);
+          }
        
     }
     const inputhandler=(input,value)=>{
@@ -76,7 +86,7 @@ function Profile(){
     }
     return(
         <>
-        <div className='container-fluid' style={{padding:'0px'}}>
+         <div className='container-fluid' style={{padding:'0px'}}>
             <form onSubmit={SubmitHandler}>
                 <div className='row ' style={{margin:'10px',padding:'10px'}}>
                     <div className='col-md-6 form-group'>
@@ -151,6 +161,7 @@ function Profile(){
                 </div>
             </form>
         </div>
+        
         </>
     )
 }
